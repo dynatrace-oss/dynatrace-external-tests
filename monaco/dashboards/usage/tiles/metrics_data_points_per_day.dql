@@ -1,0 +1,7 @@
+timeseries {
+    av = count(external.test.availability),
+    dur = count(external.test.duration),
+    exec = count(external.test.executions),
+    evt = count(external.test.usage.events_ingested),
+    step = count(external.test.step.duration)
+}, interval: 1d

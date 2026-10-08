@@ -1,0 +1,23 @@
+timeseries {dp = count(external.test.availability)}, interval: 1d, by: {test.id, test.name, test.run.location, test.type}, nonempty: true
+| summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id, test.name}
+| append [
+    timeseries {dp = count(external.test.duration)}, interval: 1d, by: {test.id, test.name, test.run.location}, nonempty: true
+    | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id, test.name}
+]
+| append [
+    timeseries {dp = count(external.test.executions)}, interval: 1d, by: {test.id, test.name, test.run.status, test.run.error_code, test.run.location}, nonempty: true
+    | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id, test.name}
+]
+| append [
+    timeseries {dp = count(external.test.usage.events_ingested)}, interval: 1d, by: {test.id, test.name, test.type, test.run.location}, nonempty: true
+    | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id, test.name}
+]
+| append [
+    timeseries {dp = count(external.test.step.duration)}, interval: 1d, by: {test.id, test.step.name, test.step.index}, nonempty: true
+    | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id}
+    | fieldsAdd test.name = null
+]
+| summarize data_point_count = sum(data_point_count), test.name = max(test.name), by: {test.id}
+| filter isNotNull(test.id)
+| fields test.id, test.name, data_point_count
+| sort data_point_count desc

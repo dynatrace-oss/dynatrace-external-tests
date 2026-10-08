@@ -1,0 +1,14 @@
+{
+  "name": "dynatrace-external-tests-playwright-wrapper",
+  "version": "1.0.0",
+  "description": "Playwright wrapper that sends test results to Dynatrace External Tests on Grail",
+  "main": "runner.js",
+  "scripts": {
+    "test": "node runner.js"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "axios": "^1.6.0",
+    "uuid": "^9.0.0"
+  }
+}

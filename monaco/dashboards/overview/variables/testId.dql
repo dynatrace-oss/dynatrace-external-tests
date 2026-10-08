@@ -1,0 +1,10 @@
+// Emits "<test.id> : <test.name>" so the dropdown stays readable while tiles
+// filter on the stable test.id. Dashboard variables may return only one field,
+// so both parts share a single column; tiles split on " : " and take the id.
+timeseries {dp = count(external.test.executions)},
+  from: now()-30d,
+  by: { test.id, test.name }
+| summarize test.name = max(test.name), by: { test.id }
+| fieldsAdd label = concat(test.id, " : ", coalesce(test.name, ""))
+| fields label
+| sort label

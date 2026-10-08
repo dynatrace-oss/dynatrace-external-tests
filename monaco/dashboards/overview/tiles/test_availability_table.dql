@@ -1,0 +1,38 @@
+// Availability half of the per-test pair; the heatmap beside it shows the same
+// metric over time. Duration lives in the performance table, not here — mixing
+// both into one table produces a column of near-identical values that carries
+// no information.
+//
+// makeTimeseries rather than a plain summarize: the buckets are what make the
+// `change` column possible, and summing them back up gives the same passed/total
+// ratio a summarize would (not a mean of per-bucket means).
+//
+// The change column is in percentage POINTS, not a relative percentage: 70% to
+// 68% is -2 pp, whereas "-2.9%" invites the reader to wonder which of the two is
+// meant. There is no symbol for a percentage point — Unicode has none, and the
+// nearest lookalike is per mille — so the unit is spelled out in the column name
+// as well as in each cell, rather than trusting "pp" to be recognised.
+// Direction is inverted against the response-time tables: here growth is good.
+fetch events
+| filter event.type == "external_test_run"
+| filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location)))
+| makeTimeseries
+    passed = countIf(test.run.availability == 1),
+    total = count(),
+    locs = countDistinct(test.run.location),
+    by: { test.name, test.type }
+| fieldsAdd runs = toLong(arraySum(total)), ok = toLong(arraySum(passed))
+| fieldsAdd failures = runs - ok
+| fieldsAdd availability = round(toDouble(ok) / toDouble(runs) * 100, decimals: 1)
+| fieldsAdd passed = arraySlice(passed, to: arraySize(passed) - 1),
+            total  = arraySlice(total,  to: arraySize(total)  - 1)
+| fieldsAdd n = toLong(arraySize(total) / 2)
+| fieldsAdd e_ok = arraySum(arraySlice(passed, to: n)), e_all = arraySum(arraySlice(total, to: n)),
+            r_ok = arraySum(arraySlice(passed, from: n)), r_all = arraySum(arraySlice(total, from: n))
+| fieldsAdd `change (pp)` = if(n > 2 and e_all > 0 and r_all > 0,
+                        round(r_ok / r_all * 100 - e_ok / e_all * 100, decimals: 1),
+                        else: 0.0)
+| fieldsAdd test = test.name, type = test.type, locations = toLong(arrayMax(locs))
+| fields test, type, availability, `change (pp)`, failures, runs, locations
+| sort availability asc
+| limit toLong($topN)

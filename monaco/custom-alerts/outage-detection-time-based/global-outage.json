@@ -1,0 +1,31 @@
+{
+  "title": "External Test Global Outage — {{ .name_suffix }}",
+  "description": "Fires when test availability is consistently below threshold across ALL locations — global outage detected.",
+  "enabled": true,
+  "source": "dynatrace-external-tests",
+  "executionSettings": {},
+  "analyzer": {
+    "name": "dt.statistics.ui.anomaly_detection.StaticThresholdAnomalyDetectionAnalyzer",
+    "input": [
+      {"key": "query", "value": "timeseries availability = avg(external.test.availability), interval:1m, by:{test.id, test.name, test.type, dt.smartscape.ext_test, dt.entity.application}{{ if index . "test_ids" }}, filter:{ in(test.id, array({{ .test_ids }})) }{{ end }}"},
+      {"key": "threshold", "value": "{{ .threshold }}"},
+      {"key": "alertCondition", "value": "BELOW"},
+      {"key": "alertOnMissingData", "value": "false"},
+      {"key": "violatingSamples", "value": "{{ .violating_samples }}"},
+      {"key": "slidingWindow", "value": "{{ .sliding_window }}"},
+      {"key": "dealertingSamples", "value": "{{ .dealerting_samples }}"}
+    ]
+  },
+  "eventTemplate": {
+    "properties": [
+      {"key": "event.name", "value": "External test global outage: {dims:test.name}"},
+      {"key": "event.description", "value": "**{dims:test.name}** ({dims:test.id}) availability has dropped across ALL locations — global outage detected.\n\nType: {dims:test.type} | Locations: {{ .locations }}\n\nCheck infrastructure, DNS, and shared dependencies affecting all runner locations."},
+      {"key": "event.type", "value": "{{ .event_type }}"},
+      {"key": "test.id", "value": "{dims:test.id}"},
+      {"key": "test.name", "value": "{dims:test.name}"},
+      {"key": "test.type", "value": "{dims:test.type}"},
+      {"key": "dt.smartscape_source.id", "value": "{dims:dt.smartscape.ext_test}"}{{ if index . "source_entity" }},
+      {"key": "dt.source_entity", "value": "{{ index . "source_entity" }}"}{{ end }}
+    ]
+  }
+}

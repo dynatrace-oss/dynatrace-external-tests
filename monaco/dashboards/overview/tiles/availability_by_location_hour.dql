@@ -1,0 +1,21 @@
+// Location × hour. Time lands on the X axis because this is a timeseries; a
+// `fetch events | summarize` would leave the axis assignment to displayedFields.
+//
+// Grouped by location, not by test: test × location leaves most cells empty,
+// and collapses to almost nothing once a single test is selected — which is the
+// normal way to use this dashboard. Location × hour stays dense.
+//
+// availability_pct is on a 0–100 scale to match every other availability tile.
+//
+// Read it by shape:
+//   a red row    → that location is degraded for the whole window
+//   a red column → every location dipped at the same hour, which points at a
+//                  shared dependency, a deployment, or an upstream outage
+timeseries av = avg(external.test.availability),
+  interval: 1h,
+  by: { test.run.location },
+  filter: { (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) }
+| fieldsAdd availability_pct = iCollectArray(av[] * 100)
+| fieldsAdd avgValue = arrayAvg(availability_pct)
+| fieldsRemove av
+| sort avgValue asc

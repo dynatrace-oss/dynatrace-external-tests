@@ -1,0 +1,7 @@
+// Runner locations seen in the last 30 days.
+timeseries {dp = count(external.test.executions)},
+  from: now()-30d,
+  by: { test.run.location }
+| summarize count = count(), by: { test.run.location }
+| fields test.run.location
+| sort test.run.location

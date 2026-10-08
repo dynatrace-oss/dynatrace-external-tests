@@ -1,0 +1,19 @@
+// Grouped by test.id as well as step name, matching the table beside it. Without
+// test.id, a step with the same name in two different tests collapses into a
+// single series — the legend then shows a step name that belongs to two
+// journeys, and the table lists two rows the chart cannot distinguish.
+//
+// Sorted by change, matching the table beside it. `limit` runs after the sort,
+// so this decides which steps both tiles show.
+timeseries avg_step_dur = avg(external.test.step.duration),
+  by: { test.id, test.step.index, test.step.name },
+  filter: { (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) }
+| fieldsAdd d2 = arraySlice(avg_step_dur, to: arraySize(avg_step_dur) - 1)
+| fieldsAdd n = toLong(arraySize(d2) / 2)
+| fieldsAdd e = arrayAvg(arrayRemoveNulls(arraySlice(d2, to: n))),
+            r = arrayAvg(arrayRemoveNulls(arraySlice(d2, from: n)))
+| fieldsAdd chg = if(n > 2 and isNotNull(e) and isNotNull(r) and e > 0,
+                     (r - e) / e * 100, else: 0.0)
+| sort chg desc
+| limit toLong($topN)
+| fieldsRemove d2, n, e, r, chg

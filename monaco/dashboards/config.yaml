@@ -1,0 +1,131 @@
+configs:
+  - id: overview
+    type:
+      document:
+        kind: dashboard
+    config:
+      name: "External tests — Overview"
+      template: external-tests-overview.dashboard.json
+      parameters:
+        active_problems:
+          type: file
+          path: overview/tiles/active_problems.dql
+        availability:
+          type: file
+          path: overview/tiles/availability.dql
+        availability_by_location_hour:
+          type: file
+          path: overview/tiles/availability_by_location_hour.dql
+        availability_heatmap_per_test_hour:
+          type: file
+          path: overview/tiles/availability_heatmap_per_test_hour.dql
+        availability_per_test_honeycomb:
+          type: file
+          path: overview/tiles/availability_per_test_honeycomb.dql
+        average_duration:
+          type: file
+          path: overview/tiles/average_duration.dql
+        avg_duration:
+          type: file
+          path: overview/tiles/avg_duration.dql
+        avg_duration_by_location:
+          type: file
+          path: overview/tiles/avg_duration_by_location.dql
+        avg_duration_by_test:
+          type: file
+          path: overview/tiles/avg_duration_by_test.dql
+        error_code_distribution:
+          type: file
+          path: overview/tiles/error_code_distribution.dql
+        error_code_timeseries:
+          type: file
+          path: overview/tiles/error_code_timeseries.dql
+        location:
+          type: file
+          path: overview/variables/location.dql
+        problem_list:
+          type: file
+          path: overview/tiles/problem_list.dql
+        response_time_per_location_table:
+          type: file
+          path: overview/tiles/response_time_per_location_table.dql
+        run_events:
+          type: file
+          path: overview/tiles/run_events.dql
+        step_duration_breakdown:
+          type: file
+          path: overview/tiles/step_duration_breakdown.dql
+        step_stats_table:
+          type: file
+          path: overview/tiles/step_stats_table.dql
+        testId:
+          type: file
+          path: overview/variables/testId.dql
+        test_availability_by_location:
+          type: file
+          path: overview/tiles/test_availability_by_location.dql
+        test_availability_table:
+          type: file
+          path: overview/tiles/test_availability_table.dql
+        test_performance_table:
+          type: file
+          path: overview/tiles/test_performance_table.dql
+        total_runs:
+          type: file
+          path: overview/tiles/total_runs.dql
+        total_runs_21:
+          type: file
+          path: overview/tiles/total_runs_21.dql
+
+  - id: usage
+    type:
+      document:
+        kind: dashboard
+    config:
+      name: "External tests — Usage"
+      template: external-tests-usage.dashboard.json
+      parameters:
+        # Resolved from the bucket config, so renaming the Monaco project does not
+        # silently break the cost tiles. It reaches the tile queries through the
+        # dashboard's `bucketName` variable: monaco renders .dql files as Go
+        # templates with an empty data map, so a `{{ }}` placeholder cannot live
+        # inside one.
+        bucket_name:
+          type: reference
+          configType: bucket
+          configId: events
+          property: id
+        active_tests:
+          type: file
+          path: usage/tiles/active_tests.dql
+        events_ingested:
+          type: file
+          path: usage/tiles/events_ingested.dql
+        silent_tests:
+          type: file
+          path: usage/tiles/silent_tests.dql
+        events_timeseries:
+          type: file
+          path: usage/tiles/events_timeseries.dql
+        events_per_test:
+          type: file
+          path: usage/tiles/events_per_test.dql
+        billed_bytes_total:
+          type: file
+          path: usage/tiles/billed_bytes_total.dql
+        billed_bytes_per_day:
+          type: file
+          path: usage/tiles/billed_bytes_per_day.dql
+        metrics_data_points_total:
+          type: file
+          path: usage/tiles/metrics_data_points_total.dql
+        metrics_data_points_per_day:
+          type: file
+          path: usage/tiles/metrics_data_points_per_day.dql
+        metrics_cardinality:
+          type: file
+          path: usage/tiles/metrics_cardinality.dql
+        cost_summary_per_test:
+          type: file
+          path: usage/tiles/cost_summary_per_test.dql
+

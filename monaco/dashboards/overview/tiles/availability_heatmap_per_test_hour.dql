@@ -1,0 +1,15 @@
+// Emits availability_pct on a 0–100 scale, like the honeycomb tile, so that
+// every availability tile on this dashboard is coloured against the same
+// numbers. A 0–1 ratio converted only for display would colour the same data
+// differently in each tile.
+timeseries { av = avg(external.test.availability),
+             scalar_av = avg(external.test.availability, scalar: true) },
+  interval: 1h,
+  by: { test.name },
+  filter: { (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) }
+| filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.name, iCollectArray(arrayLast(splitString(array($testId)[], " : ")))))
+| fieldsAdd availability_pct = iCollectArray(av[] * 100)
+| fieldsAdd avgValue = arrayAvg(availability_pct)
+| fieldsRemove av
+| sort avgValue asc
+| limit toLong($topN)

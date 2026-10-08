@@ -1,0 +1,291 @@
+{
+  "customId": "pipeline-external-test-runs",
+  "displayName": "External Test Runs",
+  "processing": {
+    "processors": [
+      {
+        "id": "mask-sensitive-urls",
+        "description": "Drop the query string from step URLs — that is where credentials end up. Keeps the path, which is what the step tiles need.",
+        "type": "dql",
+        "matcher": "isNotNull(test.step.url)",
+        "enabled": true,
+        "dql": {
+          "script": "fieldsAdd `test.step.url` = if(contains(`test.step.url`, \"?\"), concat(substring(`test.step.url`, to: indexOf(`test.step.url`, \"?\")), \"?***MASKED***\"), else: `test.step.url`)"
+        }
+      }
+    ]
+  },
+  "metricExtraction": {
+    "processors": [
+      {
+        "id": "extract-availability-metric",
+        "description": "Extract per-test availability metric",
+        "type": "valueMetric",
+        "matcher": "event.type == \"external_test_run\" and test.run.status != \"maintenance\"",
+        "enabled": true,
+        "valueMetric": {
+          "metricKey": "external.test.availability",
+          "field": "test.run.availability",
+          "dimensions": [
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.id"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.name"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.run.location"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.type"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.smartscape.ext_test"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.entity.application"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.smartscape.frontend"
+            }
+          ]
+        }
+      },
+      {
+        "id": "extract-duration-metric",
+        "description": "Extract per-test duration metric",
+        "type": "valueMetric",
+        "matcher": "event.type == \"external_test_run\"",
+        "enabled": true,
+        "valueMetric": {
+          "metricKey": "external.test.duration",
+          "field": "test.run.duration_ms",
+          "dimensions": [
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.id"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.name"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.type"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.run.location"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.smartscape.ext_test"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.entity.application"
+            }
+          ]
+        }
+      },
+      {
+        "id": "extract-executions-metric",
+        "description": "Count all test run executions by status and error code",
+        "type": "counterMetric",
+        "matcher": "event.type == \"external_test_run\"",
+        "enabled": true,
+        "counterMetric": {
+          "metricKey": "external.test.executions",
+          "dimensions": [
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.id"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.name"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.run.status"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.run.error_code"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.run.location"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.smartscape.ext_test"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.entity.application"
+            }
+          ]
+        }
+      },
+      {
+        "id": "extract-usage-counter",
+        "description": "Count every ingested test run event for usage tracking",
+        "type": "counterMetric",
+        "matcher": "event.type == \"external_test_run\"",
+        "enabled": true,
+        "counterMetric": {
+          "metricKey": "external.test.usage.events_ingested",
+          "dimensions": [
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.id"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.name"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.type"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "test.run.location"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.smartscape.ext_test"
+            },
+            {
+              "extractionType": "field",
+              "sourceFieldName": "dt.entity.application"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "davis": {
+    "processors": [
+      {
+        "id": "frontend-impact-event",
+        "description": "Create a Davis event on the FRONTEND Smartscape node when a frontend-linked test run fails.",
+        "type": "davis",
+        "matcher": "event.type == \"external_test_run\" and (test.run.status == \"failed\" or test.run.status == \"errored\") and isNotNull(dt.smartscape.frontend)",
+        "enabled": true,
+        "davis": {
+          "properties": [
+            {
+              "key": "event.type",
+              "value": "CUSTOM_INFO"
+            },
+            {
+              "key": "event.name",
+              "value": "Synthetic test failure impacts frontend: {test.name}"
+            },
+            {
+              "key": "dt.smartscape_source.id",
+              "value": "{dt.smartscape.frontend}"
+            },
+            {
+              "key": "test.id",
+              "value": "{test.id}"
+            },
+            {
+              "key": "test.name",
+              "value": "{test.name}"
+            },
+            {
+              "key": "test.type",
+              "value": "{test.type}"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "storage": {
+    "processors": [
+      {
+        "id": "store-to-default",
+        "description": "Store all run events in the external tests bucket for cost attribution",
+        "type": "bucketAssignment",
+        "matcher": "true",
+        "enabled": true,
+        "bucketAssignment": {
+          "bucketName": "{{ .bucket_name }}"
+        }
+      }
+    ]
+  },
+  "smartscapeNodeExtraction": {
+    "processors": [
+      {
+        "id": "smartscape-ext-test-node",
+        "description": "Register external test as a Smartscape node",
+        "type": "smartscapeNode",
+        "matcher": "event.type == \"external_test_run\"",
+        "enabled": true,
+        "smartscapeNode": {
+          "nodeType": "EXT_TEST",
+          "nodeIdFieldName": "dt.smartscape.ext_test",
+          "idComponents": [
+            {
+              "idComponent": "field",
+              "referencedFieldName": "test.id"
+            }
+          ],
+          "extractNode": true,
+          "nodeName": {
+            "type": "field",
+            "field": {
+              "sourceFieldName": "test.name"
+            }
+          },
+          "fieldsToExtract": [
+            {
+              "strategy": "equals",
+              "fieldName": "test.id",
+              "referencedFieldName": "test.id"
+            },
+            {
+              "strategy": "equals",
+              "fieldName": "test.type",
+              "referencedFieldName": "test.type"
+            },
+            {
+              "strategy": "equals",
+              "fieldName": "test.run.location",
+              "referencedFieldName": "test.run.location"
+            },
+            {
+              "strategy": "equals",
+              "fieldName": "dt.security_context",
+              "referencedFieldName": "dt.security_context"
+            },
+            {
+              "strategy": "equals",
+              "fieldName": "runner.name",
+              "referencedFieldName": "runner.name"
+            }
+          ],
+          "staticEdgesToExtract": [
+            {
+              "edgeType": "monitors",
+              "targetType": "FRONTEND",
+              "targetIdFieldName": "dt.smartscape.frontend"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+// The headline number comes from `scalar: true`, not from arrayAvg(avail).
+// arrayAvg averages the per-bucket averages, giving every bucket equal weight —
+// so a quiet bucket counts as much as a busy one and the headline drifts away
+// from the honeycomb's passed/total. `scalar: true` aggregates across the whole timeframe in one go, which for a
+// 0/1 metric is exactly passed/total.
+// `avail` is still returned: the tile's trend indicator needs the series.
+timeseries { avail = avg(external.test.availability), scalar_av = avg(external.test.availability, scalar: true) },
+  filter: { (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) }
+| fieldsAdd availability_pct = round(scalar_av * 100, decimals: 1)
+| fields timeframe, interval, availability_pct, avail

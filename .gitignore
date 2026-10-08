@@ -1,0 +1,23 @@
+.DS_Store
+
+# Editor swap/backup files
+*.swp
+*.swo
+*~
+.claude/
+.logs/
+monaco/.logs/
+.env
+.idea/
+.venv/
+
+# Dependencies installed by the sample runners
+node_modules/
+
+# Python bytecode from the sample runners
+__pycache__/
+*.py[cod]
+
+# Java/Gradle/Maven build output
+target/
+build/

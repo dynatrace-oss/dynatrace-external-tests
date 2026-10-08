@@ -1,0 +1,18 @@
+{
+  "routingEntries": [
+    {
+      "enabled": true,
+      "description": "Route run-level events to the runs pipeline",
+      "matcher": "event.type == \"external_test_run\"",
+      "pipelineType": "custom",
+      "pipelineId": "{{ .pipeline_runs_id }}"
+    },
+    {
+      "enabled": true,
+      "description": "Route step-level events to the steps pipeline",
+      "matcher": "event.type == \"external_test_step\"",
+      "pipelineType": "custom",
+      "pipelineId": "{{ .pipeline_steps_id }}"
+    }
+  ]
+}

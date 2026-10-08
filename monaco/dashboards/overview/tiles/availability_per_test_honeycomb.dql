@@ -1,0 +1,9 @@
+fetch events
+| filter event.type == "external_test_run"
+| filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location)))
+| summarize
+    total = count(),
+    passed = countIf(test.run.availability == 1),
+    by: { test.name }
+| fieldsAdd availability_pct = round(toDouble(passed) / toDouble(total) * 100, decimals: 1)
+| fields test.name, availability_pct

@@ -1,0 +1,5 @@
+timeseries runs = sum(external.test.executions),
+  interval: 1h,
+  filter: { (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) }
+| fieldsAdd total_runs = toLong(arraySum(runs))
+| fields timeframe, interval, total_runs, runs

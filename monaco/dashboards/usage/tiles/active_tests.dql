@@ -1,0 +1,3 @@
+fetch events
+| filter event.type == "external_test_run"
+| summarize active_tests = countDistinct(test.id)

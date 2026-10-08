@@ -1,0 +1,12 @@
+configs:
+  - id: error-code-spike-default
+    type:
+      settings:
+        schema: builtin:davis.anomaly-detectors
+        scope: "environment"
+    config:
+      template: custom-alert.json
+      parameters:
+        name_suffix: "Default"
+        event_type: "ERROR_EVENT"
+        # source_entity: "{dims:dt.entity.application}"   # uncomment to anchor Problems to an APPLICATION entity (requires DT_APPLICATION_ID on every run)

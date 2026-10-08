@@ -1,0 +1,5 @@
+fetch events
+| filter event.type == "external_test_run"
+| makeTimeseries runs = count(), interval: 1h
+| fieldsAdd total_events = toLong(arraySum(runs))
+| fields timeframe, interval, total_events, runs

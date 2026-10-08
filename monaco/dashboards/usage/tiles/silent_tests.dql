@@ -1,0 +1,5 @@
+fetch events, from: now()-48h
+| filter event.type == "external_test_run"
+| summarize last_seen = max(timestamp), by: {test.id}
+| filter last_seen < now() - 2h
+| summarize silent_tests = count()

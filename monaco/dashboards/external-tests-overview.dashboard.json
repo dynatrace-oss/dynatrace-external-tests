@@ -1,0 +1,1628 @@
+{
+  "version": 21,
+  "variables": [
+    {
+      "version": 2,
+      "key": "testId",
+      "type": "query",
+      "visible": true,
+      "editable": true,
+      "input": "{{ .testId }}",
+      "multiple": true,
+      "defaultValue": "* : All tests"
+    },
+    {
+      "version": 2,
+      "key": "location",
+      "type": "query",
+      "visible": true,
+      "editable": true,
+      "input": "{{ .location }}",
+      "multiple": true,
+      "defaultValue": "*"
+    },
+    {
+      "version": 2,
+      "key": "topN",
+      "type": "csv",
+      "visible": true,
+      "editable": true,
+      "input": "5,10,20,50",
+      "multiple": false,
+      "defaultValue": "10"
+    },
+    {
+      "version": 2,
+      "key": "tableRows",
+      "type": "csv",
+      "visible": true,
+      "editable": true,
+      "input": "10,25,50,100,200",
+      "multiple": false,
+      "defaultValue": "10"
+    }
+  ],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# External tests — overview\nAvailability, run duration, and failure causes for the tests selected below. **topN** limits the number of series shown in charts; **tableRows** limits table results."
+    },
+    "19": {
+      "title": "Active problems",
+      "description": "Aggregated across all locations",
+      "type": "data",
+      "query": "{{ .active_problems }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none"
+        },
+        "coloring": {
+          "colorRules": [
+            {
+              "value": 1,
+              "comparator": "≥",
+              "field": "active_problems",
+              "colorMode": "custom-color",
+              "customColor": "#C4233B"
+            },
+            {
+              "value": 1,
+              "comparator": "<",
+              "field": "active_problems",
+              "colorMode": "custom-color",
+              "customColor": "#2F6863"
+            }
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "Availability",
+      "type": "data",
+      "query": "{{ .availability }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "sparklineSettings": {
+            "isVisible": false
+          }
+        },
+        "coloring": {
+          "colorRules": [
+            {
+              "value": 0,
+              "comparator": "≥",
+              "field": "availability_pct",
+              "colorMode": "custom-color",
+              "customColor": "#C4233B"
+            },
+            {
+              "value": 99,
+              "comparator": "≥",
+              "field": "availability_pct",
+              "colorMode": "custom-color",
+              "customColor": "#ECA440"
+            },
+            {
+              "value": 99.9,
+              "comparator": "≥",
+              "field": "availability_pct",
+              "colorMode": "custom-color",
+              "customColor": "#2F6863"
+            }
+          ]
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "availability_pct",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null,
+            "added": 1780921564439
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "Total runs",
+      "type": "data",
+      "query": "{{ .total_runs }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "sparklineSettings": {
+            "isVisible": false
+          }
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "5": {
+      "title": "Average run duration",
+      "type": "data",
+      "query": "{{ .avg_duration }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "sparklineSettings": {
+            "isVisible": false
+          }
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "avg_duration_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null,
+            "added": 1780921564440
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "title": "Problem list",
+      "description": "Aggregated across all locations",
+      "type": "data",
+      "query": "{{ .problem_list }}",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "hiddenColumns": [
+            [
+              "event.kind"
+            ]
+          ],
+          "hideColumnsForLargeResults": false,
+          "linewrapEnabled": true,
+          "sortBy": [
+            {
+              "columnId": "[\"event.status\"]",
+              "direction": "ascending"
+            },
+            {
+              "columnId": "[\"event.start\"]",
+              "direction": "descending"
+            }
+          ]
+        },
+        "coloring": {
+          "colorRules": [
+            {
+              "value": "ACTIVE",
+              "comparator": "=",
+              "field": "event.status",
+              "colorMode": "custom-color",
+              "customColor": "#C4233B",
+              "type": "string"
+            },
+            {
+              "value": "CLOSED",
+              "comparator": "=",
+              "field": "event.status",
+              "colorMode": "custom-color",
+              "customColor": "#2F6863",
+              "type": "string"
+            }
+          ]
+        },
+        "columnSettings": [
+          {
+            "columnId": "event.name",
+            "customLinkSettings": {
+              "isEnabled": true,
+              "urlTemplate": "/ui/intent/dynatrace.davis.problems/view-problem#%7B%22event.id%22%3A%22MONACOEVENTID%22%2C%22event.kind%22%3A%22DAVIS_PROBLEM%22%7D",
+              "openInNewTab": false
+            }
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "type": "markdown",
+      "content": "##### Availability\nAvailability by test. The change column uses percentage points, not relative percent: a drop from 70% to 68% is −2 pp. The hourly heatmap helps identify when degradation began."
+    },
+    "14": {
+      "title": "Availability by test",
+      "type": "data",
+      "query": "{{ .availability_per_test_honeycomb }}",
+      "visualization": "honeycomb",
+      "visualizationSettings": {
+        "unitsOverrides": [
+          {
+            "identifier": "availability_pct",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ],
+        "coloring": {
+          "colorRules": [
+            {
+              "colorMode": "single-color",
+              "comparator": "≥",
+              "field": "availability_pct",
+              "type": "double",
+              "value": 0,
+              "color": "var(--dt-colors-charts-apdex-unacceptable-default, #cd3741)"
+            },
+            {
+              "colorMode": "single-color",
+              "comparator": "≥",
+              "field": "availability_pct",
+              "type": "double",
+              "value": 99,
+              "color": "var(--dt-colors-charts-apdex-fair-default, #a9780f)"
+            },
+            {
+              "colorMode": "single-color",
+              "comparator": "≥",
+              "field": "availability_pct",
+              "type": "double",
+              "value": 100,
+              "color": "var(--dt-colors-charts-apdex-excellent-default, #2a7453)"
+            }
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "7": {
+      "title": "Availability — test × hour",
+      "type": "data",
+      "query": "{{ .availability_heatmap_per_test_hour }}",
+      "visualization": "heatmap",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "dataMapping": {
+          "dimension": "availability_pct"
+        },
+        "colorModeType": {
+          "colorMode": "custom-colors",
+          "categoricalCustomColors": [],
+          "sequentialCustomColors": [
+            {
+              "id": 100.0,
+              "value": 100,
+              "comparator": "≥",
+              "color": {
+                "Default": "var(--dt-colors-charts-apdex-excellent-default, #2a7453)"
+              }
+            },
+            {
+              "id": 101.0,
+              "value": 99,
+              "comparator": "≥",
+              "color": {
+                "Default": "var(--dt-colors-charts-apdex-fair-default, #a9780f)"
+              }
+            },
+            {
+              "id": 102.0,
+              "value": 0,
+              "comparator": "≥",
+              "color": {
+                "Default": "var(--dt-colors-charts-apdex-unacceptable-default, #cd3741)"
+              }
+            }
+          ],
+          "color": {
+            "Default": "var(--dt-colors-charts-status-none-default, #939393)"
+          }
+        },
+        "valueBoundaries": {
+          "min": {
+            "mode": "custom",
+            "value": 0
+          },
+          "max": {
+            "mode": "custom",
+            "value": 100
+          }
+        },
+        "legend": {
+          "showLegend": false
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "availability_pct",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "21": {
+      "title": "Run volume",
+      "type": "data",
+      "query": "{{ .total_runs_21 }}",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": true
+          }
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "Run duration — trend",
+      "type": "data",
+      "query": "{{ .average_duration }}",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": {
+            "hidden": true
+          },
+          "curve": "smooth",
+          "gapPolicy": "connect"
+        },
+        "legend": {
+          "ratio": 33
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "avg_duration",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "20": {
+      "title": "Run duration by test",
+      "type": "data",
+      "query": "{{ .avg_duration_by_test }}",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "legend": {
+          "ratio": 17
+        },
+        "dataMapping": {
+          "displayedFields": [
+            "test.name"
+          ]
+        },
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": [
+              "avg_duration"
+            ]
+          }
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "avg_duration",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "type": "markdown",
+      "content": "##### Availability\nA red row while others remain green points to a location-specific issue: check the runner, its network, or its region. A red column across all locations points to a shared cause, such as a deployment, upstream dependency, or application issue. The map requires `test.run.location.lat` and `.lon` on run events."
+    },
+    "30": {
+      "title": "Availability — location × hour",
+      "type": "data",
+      "query": "{{ .availability_by_location_hour }}",
+      "visualization": "heatmap",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "dataMapping": {
+          "dimension": "availability_pct"
+        },
+        "colorModeType": {
+          "colorMode": "custom-colors",
+          "numericColorPalette": "red-green-inverted",
+          "categoricalCustomColors": [],
+          "sequentialCustomColors": [
+            {
+              "id": 200.0,
+              "value": 100,
+              "comparator": "≥",
+              "color": {
+                "Default": "var(--dt-colors-charts-apdex-excellent-default, #2a7453)"
+              }
+            },
+            {
+              "id": 201.0,
+              "value": 99,
+              "comparator": "≥",
+              "color": {
+                "Default": "var(--dt-colors-charts-apdex-fair-default, #a9780f)"
+              }
+            },
+            {
+              "id": 202.0,
+              "value": 0,
+              "comparator": "≥",
+              "color": {
+                "Default": "var(--dt-colors-charts-apdex-unacceptable-default, #cd3741)"
+              }
+            }
+          ],
+          "color": {
+            "Default": "var(--dt-colors-charts-apdex-unacceptable-default, #cd3741)"
+          }
+        },
+        "valueBoundaries": {
+          "min": {
+            "mode": "custom",
+            "value": 0
+          },
+          "max": {
+            "mode": "custom",
+            "value": 100
+          }
+        },
+        "legend": {
+          "showLegend": false
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "availability_pct",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "23": {
+      "title": "Availability — map",
+      "type": "data",
+      "query": "{{ .test_availability_by_location }}",
+      "visualization": "dotMap",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "tooltip": {
+          "showCustomFields": true
+        },
+        "colorModeType": {
+          "categoricalCustomColors": [
+            {
+              "id": 120767.40000000596,
+              "value": "",
+              "color": "#b3007d",
+              "comparator": "="
+            }
+          ],
+          "numericColorPalette": "red-green-inverted",
+          "colorMode": "custom-colors",
+          "color": {
+            "Default": "var(--dt-colors-charts-apdex-unacceptable-default, #cd3741)"
+          },
+          "sequentialCustomColors": [
+            {
+              "id": 138835.10000000894,
+              "value": 100,
+              "color": {
+                "Default": "var(--dt-colors-charts-categorical-themed-swamps-color-01-default, #006650)"
+              },
+              "comparator": "≥"
+            },
+            {
+              "id": 153309.90000000596,
+              "value": 99,
+              "color": {
+                "Default": "var(--dt-colors-charts-apdex-poor-default, #d56b1a)"
+              },
+              "comparator": "≥"
+            },
+            {
+              "id": 164318.70000000298,
+              "value": 0,
+              "color": {
+                "Default": "var(--dt-colors-charts-apdex-unacceptable-default, #cd3741)"
+              },
+              "comparator": "≥"
+            }
+          ]
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "availability_pct",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null,
+            "added": 1780990642553
+          },
+          {
+            "identifier": "avg_duration_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null,
+            "added": 1780990642553
+          },
+          {
+            "identifier": "executions",
+            "unitCategory": null,
+            "baseUnit": null,
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null,
+            "added": 1780990642553
+          }
+        ],
+        "dataMapping": {
+          "dimension": "availability_pct"
+        },
+        "valueBoundaries": {
+          "min": {
+            "mode": "custom",
+            "value": 0
+          },
+          "max": {
+            "mode": "custom",
+            "value": 100
+          }
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "Run duration by location",
+      "type": "data",
+      "query": "{{ .avg_duration_by_location }}",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "chartSettings": {
+          "gapPolicy": "connect"
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "avg_duration_ms",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "27": {
+      "type": "markdown",
+      "content": "##### Why tests fail\nDistribution and trend by error code. A shift from `TIMEOUT` to `AUTH_FAILED` can reveal a new failure mode even when overall availability stays unchanged."
+    },
+    "28": {
+      "title": "Error codes — distribution",
+      "type": "data",
+      "query": "{{ .error_code_distribution }}",
+      "visualization": "pieChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "dataMapping": {
+          "displayedFields": [
+            "test.run.error_code"
+          ],
+          "value": "count"
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "29": {
+      "title": "Error codes — trend",
+      "type": "data",
+      "query": "{{ .error_code_timeseries }}",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "legend": {
+          "ratio": 17
+        },
+        "dataMapping": {
+          "displayedFields": [
+            "test.run.error_code"
+          ]
+        },
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": [
+              "failures"
+            ]
+          },
+          "gapPolicy": "connect"
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "24": {
+      "type": "markdown",
+      "content": "##### Step breakdown\nSelect one test to compare steps from the same journey. These tiles don't use the location filter and remain empty until the runner sends `external_test_step` events."
+    },
+    "25": {
+      "title": "Step duration — per step",
+      "type": "data",
+      "query": "{{ .step_duration_breakdown }}",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "legend": {
+          "ratio": 17
+        },
+        "dataMapping": {
+          "displayedFields": [
+            "test.step.name"
+          ]
+        },
+        "chartSettings": {
+          "fieldMapping": {
+            "leftAxisValues": [
+              "avg_step_dur"
+            ]
+          },
+          "stacking": "stacked",
+          "gapPolicy": "connect"
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "avg_step_dur",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "26": {
+      "title": "Step statistics",
+      "type": "data",
+      "query": "{{ .step_stats_table }}",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "linewrapEnabled": false,
+          "hideColumnsForLargeResults": false,
+          "columnOrder": [
+            [
+              "test"
+            ],
+            [
+              "step"
+            ],
+            [
+              "avg_duration"
+            ],
+            [
+              "change"
+            ],
+            [
+              "failures"
+            ],
+            [
+              "failure_rate"
+            ]
+          ],
+          "hiddenColumns": [
+            [
+              "step_order"
+            ]
+          ],
+          "sortBy": [
+            {
+              "columnId": "[\"test\"]",
+              "direction": "ascending"
+            },
+            {
+              "columnId": "[\"step_order\"]",
+              "direction": "ascending"
+            }
+          ],
+          "rowDensity": "condensed",
+          "colorThresholdTarget": "cell"
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "avg_duration",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          },
+          {
+            "identifier": "change",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          },
+          {
+            "identifier": "failure_rate",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ],
+        "coloring": {
+          "colorRules": [
+            {
+              "value": 0,
+              "comparator": ">",
+              "field": "failure_rate",
+              "colorMode": "custom-color",
+              "customColor": "#cd3741"
+            },
+            {
+              "value": 0,
+              "comparator": ">",
+              "field": "change",
+              "colorMode": "custom-color",
+              "customColor": "#cd3741"
+            },
+            {
+              "value": 0,
+              "comparator": "<",
+              "field": "change",
+              "colorMode": "custom-color",
+              "customColor": "#2a7453"
+            }
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "16": {
+      "title": "Failed and slowest runs",
+      "type": "data",
+      "query": "{{ .run_events }}",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "sortBy": [
+            {
+              "columnId": "[\"ok\"]",
+              "direction": "ascending"
+            },
+            {
+              "columnId": "[\"duration\"]",
+              "direction": "descending"
+            }
+          ],
+          "hiddenColumns": [
+            [
+              "ok"
+            ]
+          ],
+          "rowDensity": "condensed",
+          "columnOrder": [
+            [
+              "time"
+            ],
+            [
+              "test"
+            ],
+            [
+              "type"
+            ],
+            [
+              "status"
+            ],
+            [
+              "duration"
+            ],
+            [
+              "location"
+            ],
+            [
+              "error"
+            ],
+            [
+              "message"
+            ]
+          ],
+          "columnWidthStrategy": "content"
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "duration",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "32": {
+      "title": "Run duration by location",
+      "type": "data",
+      "query": "{{ .response_time_per_location_table }}",
+      "visualization": "table",
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      },
+      "visualizationSettings": {
+        "table": {
+          "enableSparklines": true,
+          "rowDensity": "condensed",
+          "linewrapEnabled": false,
+          "colorThresholdTarget": "cell",
+          "hiddenColumns": [
+            [
+              "timeframe"
+            ],
+            [
+              "interval"
+            ]
+          ],
+          "columnOrder": [
+            [
+              "location"
+            ],
+            [
+              "avg_response_time"
+            ],
+            [
+              "change"
+            ],
+            [
+              "trend"
+            ]
+          ],
+          "sortBy": [
+            {
+              "columnId": "[\"avg_response_time\"]",
+              "direction": "descending"
+            }
+          ]
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "avg_response_time",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          },
+          {
+            "identifier": "change",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ],
+        "coloring": {
+          "colorRules": [
+            {
+              "value": 0,
+              "comparator": ">",
+              "field": "change",
+              "colorMode": "custom-color",
+              "customColor": "#cd3741"
+            },
+            {
+              "value": 0,
+              "comparator": "<",
+              "field": "change",
+              "colorMode": "custom-color",
+              "customColor": "#2a7453"
+            }
+          ]
+        }
+      }
+    },
+    "33": {
+      "type": "markdown",
+      "content": "##### Run duration\nThe table ranks locations by change rather than absolute duration. This helps distinguish one degrading region from an application that became slower everywhere. The trend shows the raw trajectory for each location."
+    },
+    "40": {
+      "type": "markdown",
+      "content": "### 1 · Overall health\nThe fastest way to check whether the test estate has a broad problem. Aggregate values can hide individual failures, so healthy results here don't rule out an issue with a specific test."
+    },
+    "41": {
+      "type": "markdown",
+      "content": "### 2 · Tests, steps and failures\nAvailability and run duration by test, failure trends by error code, and step-level details for multi-step journeys."
+    },
+    "42": {
+      "type": "markdown",
+      "content": "### 3 · Locations\nAvailability and run duration by runner location. Use this section to distinguish a runner or regional issue from an application-wide degradation."
+    },
+    "43": {
+      "type": "markdown",
+      "content": "### 4 · Individual runs\nIndividual executions behind an anomaly, sorted with failures first. Use error codes, messages, and locations to investigate a specific incident."
+    },
+    "45": {
+      "title": "Availability — per test",
+      "type": "data",
+      "query": "{{ .test_availability_table }}",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "rowDensity": "condensed",
+          "linewrapEnabled": false,
+          "colorThresholdTarget": "cell",
+          "columnOrder": [
+            [
+              "test"
+            ],
+            [
+              "type"
+            ],
+            [
+              "availability"
+            ],
+            [
+              "change (pp)"
+            ],
+            [
+              "failures"
+            ],
+            [
+              "runs"
+            ],
+            [
+              "locations"
+            ]
+          ],
+          "sortBy": [
+            {
+              "columnId": "[\"availability\"]",
+              "direction": "ascending"
+            }
+          ]
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "availability",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          },
+          {
+            "identifier": "change (pp)",
+            "unitCategory": "unspecified",
+            "baseUnit": null,
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": " pp",
+            "delimiter": false,
+            "cascade": null
+          }
+        ],
+        "coloring": {
+          "colorRules": [
+            {
+              "value": 0,
+              "comparator": "≥",
+              "field": "availability",
+              "colorMode": "custom-color",
+              "customColor": "#cd3741"
+            },
+            {
+              "value": 99,
+              "comparator": "≥",
+              "field": "availability",
+              "colorMode": "custom-color",
+              "customColor": "#a9780f"
+            },
+            {
+              "value": 100,
+              "comparator": "≥",
+              "field": "availability",
+              "colorMode": "custom-color",
+              "customColor": "#2a7453"
+            },
+            {
+              "value": 0,
+              "comparator": "<",
+              "field": "change (pp)",
+              "colorMode": "custom-color",
+              "customColor": "#cd3741"
+            },
+            {
+              "value": 0,
+              "comparator": ">",
+              "field": "change (pp)",
+              "colorMode": "custom-color",
+              "customColor": "#2a7453"
+            }
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "46": {
+      "title": "Run duration by test",
+      "type": "data",
+      "query": "{{ .test_performance_table }}",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "rowDensity": "condensed",
+          "linewrapEnabled": false,
+          "colorThresholdTarget": "cell",
+          "columnOrder": [
+            [
+              "test"
+            ],
+            [
+              "avg_duration"
+            ],
+            [
+              "change"
+            ],
+            [
+              "trend"
+            ]
+          ],
+          "sortBy": [
+            {
+              "columnId": "[\"avg_duration\"]",
+              "direction": "descending"
+            }
+          ],
+          "enableSparklines": true,
+          "hiddenColumns": [
+            [
+              "timeframe"
+            ],
+            [
+              "interval"
+            ]
+          ]
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "avg_duration",
+            "unitCategory": "time",
+            "baseUnit": "millisecond",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          },
+          {
+            "identifier": "change",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ],
+        "coloring": {
+          "colorRules": [
+            {
+              "value": 0,
+              "comparator": ">",
+              "field": "change",
+              "colorMode": "custom-color",
+              "customColor": "#cd3741"
+            },
+            {
+              "value": 0,
+              "comparator": "<",
+              "field": "change",
+              "colorMode": "custom-color",
+              "customColor": "#2a7453"
+            }
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "47": {
+      "type": "markdown",
+      "content": "##### Run duration\nThe table ranks tests by change rather than absolute duration. A test that is always slow may be expected; a test that suddenly became slower needs attention. The trend shows when the change began."
+    }
+  },
+  "layouts": {
+    "0": {
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 2
+    },
+    "40": {
+      "x": 0,
+      "y": 2,
+      "w": 24,
+      "h": 2
+    },
+    "19": {
+      "x": 0,
+      "y": 4,
+      "w": 4,
+      "h": 3
+    },
+    "3": {
+      "x": 4,
+      "y": 4,
+      "w": 4,
+      "h": 3
+    },
+    "5": {
+      "x": 0,
+      "y": 7,
+      "w": 4,
+      "h": 3
+    },
+    "4": {
+      "x": 4,
+      "y": 7,
+      "w": 4,
+      "h": 3
+    },
+    "14": {
+      "x": 8,
+      "y": 4,
+      "w": 8,
+      "h": 6
+    },
+    "8": {
+      "x": 16,
+      "y": 4,
+      "w": 8,
+      "h": 3
+    },
+    "21": {
+      "x": 16,
+      "y": 7,
+      "w": 8,
+      "h": 3
+    },
+    "18": {
+      "x": 0,
+      "y": 10,
+      "w": 24,
+      "h": 5
+    },
+    "41": {
+      "x": 0,
+      "y": 15,
+      "w": 24,
+      "h": 2
+    },
+    "6": {
+      "x": 0,
+      "y": 17,
+      "w": 24,
+      "h": 2
+    },
+    "45": {
+      "x": 0,
+      "y": 19,
+      "w": 12,
+      "h": 6
+    },
+    "7": {
+      "x": 12,
+      "y": 19,
+      "w": 12,
+      "h": 6
+    },
+    "47": {
+      "x": 0,
+      "y": 25,
+      "w": 24,
+      "h": 2
+    },
+    "46": {
+      "x": 0,
+      "y": 27,
+      "w": 12,
+      "h": 6
+    },
+    "20": {
+      "x": 12,
+      "y": 27,
+      "w": 12,
+      "h": 6
+    },
+    "27": {
+      "x": 0,
+      "y": 33,
+      "w": 24,
+      "h": 2
+    },
+    "28": {
+      "x": 0,
+      "y": 35,
+      "w": 7,
+      "h": 6
+    },
+    "29": {
+      "x": 7,
+      "y": 35,
+      "w": 17,
+      "h": 6
+    },
+    "24": {
+      "x": 0,
+      "y": 41,
+      "w": 24,
+      "h": 2
+    },
+    "26": {
+      "x": 0,
+      "y": 43,
+      "w": 10,
+      "h": 7
+    },
+    "25": {
+      "x": 10,
+      "y": 43,
+      "w": 14,
+      "h": 7
+    },
+    "42": {
+      "x": 0,
+      "y": 50,
+      "w": 24,
+      "h": 2
+    },
+    "9": {
+      "x": 0,
+      "y": 52,
+      "w": 24,
+      "h": 2
+    },
+    "23": {
+      "x": 0,
+      "y": 54,
+      "w": 12,
+      "h": 7
+    },
+    "30": {
+      "x": 12,
+      "y": 54,
+      "w": 12,
+      "h": 7
+    },
+    "33": {
+      "x": 0,
+      "y": 61,
+      "w": 24,
+      "h": 2
+    },
+    "32": {
+      "x": 0,
+      "y": 63,
+      "w": 8,
+      "h": 6
+    },
+    "11": {
+      "x": 8,
+      "y": 63,
+      "w": 16,
+      "h": 6
+    },
+    "43": {
+      "x": 0,
+      "y": 69,
+      "w": 24,
+      "h": 2
+    },
+    "16": {
+      "x": 0,
+      "y": 71,
+      "w": 24,
+      "h": 6
+    }
+  }
+}

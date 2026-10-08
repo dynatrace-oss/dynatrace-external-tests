@@ -1,0 +1,5 @@
+{
+  "table": "events",
+  "displayName": "External Tests",
+  "retentionDays": 35
+}

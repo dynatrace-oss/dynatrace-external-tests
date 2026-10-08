@@ -1,0 +1,19 @@
+// `scalar: true` rather than arrayAvg(dur) — see avg_duration.dql. Locations
+// report at different rates, so equal-weighting the buckets distorts the
+// ranking as well as the numbers.
+// Do not add a `| fields` clause here: this tile is a lineChart and needs the
+// timeframe/interval columns that `timeseries` emits. Selecting fields drops
+// them and the tile renders an error instead of a chart.
+timeseries { dur = avg(external.test.duration), scalar_dur = avg(external.test.duration, scalar: true) },
+  by: { test.run.location },
+  filter: { (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) }
+| fieldsAdd avg_duration_ms = round(scalar_dur, decimals: 1)
+// Ranked by change, matching the table beside it.
+| fieldsAdd d2 = arraySlice(dur, to: arraySize(dur) - 1)
+| fieldsAdd n = toLong(arraySize(d2) / 2)
+| fieldsAdd e = arrayAvg(arrayRemoveNulls(arraySlice(d2, to: n))),
+            r = arrayAvg(arrayRemoveNulls(arraySlice(d2, from: n)))
+| fieldsAdd chg = if(n > 2 and isNotNull(e) and isNotNull(r) and e > 0,
+                     (r - e) / e * 100, else: 0.0)
+| sort chg desc
+| fieldsRemove scalar_dur, d2, n, e, r, chg

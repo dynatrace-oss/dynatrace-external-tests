@@ -1,0 +1,20 @@
+// Scopes problems structurally via the EXT_TEST Smartscape node id, not by
+// parsing event.name — alert titles can change without breaking this tile.
+// The subquery resolves the selected test.id values to node ids using
+// external_test_run events, which carry test.id and dt.smartscape.ext_test on
+// the same record.
+fetch dt.davis.problems
+| filter not(dt.davis.is_duplicate)
+| filter event.status == "ACTIVE"
+| expand entity = smartscape.affected_entities
+| fieldsAdd eid_str = toString(entity)
+| fieldsAdd ext_test_id = arrayFirst(splitString(arrayLast(splitString(eid_str, "\"id\":\"")), "\""))
+| join [
+    fetch events, from: -30d
+    | filter event.type == "external_test_run"
+    | filter isNotNull(dt.smartscape.ext_test)
+    | filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : ")))))
+    | dedup dt.smartscape.ext_test
+    | fields ext_test_id = toString(dt.smartscape.ext_test)
+  ], on: { ext_test_id }, kind: inner
+| summarize active_problems = countDistinct(event.id)

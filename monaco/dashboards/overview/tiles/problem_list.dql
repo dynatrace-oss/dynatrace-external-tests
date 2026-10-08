@@ -1,0 +1,38 @@
+// Uses $tableRows, not $topN. One variable driving problems, tests, steps and
+// raw rows at once would make the same number mean something different in every
+// tile. Tables get their own limit.
+fetch dt.davis.problems
+| filter not(dt.davis.is_duplicate)
+| expand entity = smartscape.affected_entities
+| fieldsAdd eid_str = toString(entity)
+| fieldsAdd ext_test_id = arrayFirst(splitString(arrayLast(splitString(eid_str, "\"id\":\"")), "\""))
+| join [
+    fetch events, from: -30d
+    | filter event.type == "external_test_run"
+    | filter isNotNull(dt.smartscape.ext_test)
+    | filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : ")))))
+    | dedup dt.smartscape.ext_test
+    | fields ext_test_id = toString(dt.smartscape.ext_test)
+  ], on: { ext_test_id }, kind: inner
+| dedup event.id
+| fields
+    event.id,
+    event.name,
+    display_id,
+    event.status,
+    event.category,
+    event.start,
+    affected_entity_names,
+    event.kind
+// ACTIVE first, then newest. "ACTIVE" sorts before "CLOSED" alphabetically, so
+// plain ascending order on the status is enough — no rank column needed.
+//
+// This sort is not cosmetic: `limit` runs after it, so it decides *which* rows
+// come back. Sorting by event.start alone returns the newest rows regardless of
+// status, so a section called "Active problems" can come back empty while
+// active problems exist.
+//
+// The tile's own table.sortBy then reorders those rows for display and must
+// match, otherwise it silently overrides this.
+| sort event.status asc, event.start desc
+| limit toLong($tableRows)

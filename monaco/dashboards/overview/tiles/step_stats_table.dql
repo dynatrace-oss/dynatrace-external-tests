@@ -1,0 +1,41 @@
+// Column names carry no unit suffixes — the cell already renders "253 ms" and
+// "8.5%", so avg_duration_ms / failure_rate_pct only repeated that in the header.
+//
+// `test` is the first column rather than the step index. Step events do not
+// carry test.name, so this is test.id — values like
+// "checkout-flow" read fine. The index is still fetched, but only to keep steps
+// in journey order; it is hidden in the tile.
+//
+// `change` compares the second half of the window against the first, like every
+// other table here. It tracks duration, so growth is bad and coloured red — the
+// same direction as the response-time tables, the opposite of availability.
+//
+// No location filter: step events do not carry test.run.location either, so
+// filtering on it would return nothing. The section description says so.
+fetch events
+| filter event.type == "external_test_step"
+| filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : ")))))
+| makeTimeseries
+    dur = avg(toLong(test.step.duration_ms)),
+    fails = countIf(test.step.status == "failed"),
+    total = count(),
+    by: { test.id, test.step.index, test.step.name }
+| fieldsAdd avg_duration = round(arrayAvg(dur), decimals: 0),
+            failures = toLong(arraySum(fails)),
+            total_count = toLong(arraySum(total))
+| fieldsAdd failure_rate = round(toDouble(failures) / toDouble(total_count) * 100, decimals: 1)
+| fieldsAdd dur = arraySlice(dur, to: arraySize(dur) - 1)
+| fieldsAdd n = toLong(arraySize(dur) / 2)
+| fieldsAdd earlier = arrayAvg(arrayRemoveNulls(arraySlice(dur, to: n))),
+            recent  = arrayAvg(arrayRemoveNulls(arraySlice(dur, from: n)))
+| fieldsAdd change = if(n > 2 and isNotNull(earlier) and isNotNull(recent) and earlier > 0,
+                        round((recent - earlier) / earlier * 100, decimals: 1), else: 0.0)
+| fieldsAdd test = test.id, step = test.step.name, step_order = test.step.index
+| fields test, step, avg_duration, change, failures, failure_rate, step_order
+// Sorted by change, matching the chart beside it. `limit` runs after the sort,
+// so this decides *which* steps appear — the two tiles have to agree or a step
+// visible in one is missing from the other. The tile's own table.sortBy then
+// puts them back into journey order for reading; selection and display are
+// separate concerns.
+| sort change desc
+| limit toLong($topN)

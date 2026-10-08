@@ -1,0 +1,7 @@
+timeseries {dp = sum(external.test.executions)},
+  by: { test.run.error_code },
+  filter: { test.run.status == "failed" and (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) }
+| fieldsAdd count = toLong(arraySum(dp))
+| fields test.run.error_code, count
+| sort count desc
+| limit 10

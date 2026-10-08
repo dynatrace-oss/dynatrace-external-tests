@@ -1,0 +1,31 @@
+// Performance half of the per-test pair — same shape as the per-location
+// response time table, so the two read identically.
+//
+// One decimal on the millisecond value on purpose: rounding to whole seconds
+// collapses tests that differ meaningfully into the same displayed value.
+//
+// `change` compares the second half of the selected window against the first, so
+// it follows the dashboard timeframe. Slower is worse, so growth is red — the
+// opposite direction to the availability tiles.
+timeseries { dur = avg(external.test.duration), scalar_dur = avg(external.test.duration, scalar: true) },
+  by: { test.name },
+  filter: { (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) }
+| fieldsAdd avg_duration = round(scalar_dur, decimals: 1)
+| fieldsAdd dur = arraySlice(dur, to: arraySize(dur) - 1)
+| fieldsAdd n = toLong(arraySize(dur) / 2)
+| fieldsAdd earlier = arrayAvg(arrayRemoveNulls(arraySlice(dur, to: n))),
+            recent  = arrayAvg(arrayRemoveNulls(arraySlice(dur, from: n)))
+| fieldsAdd change = if(n > 2 and isNotNull(earlier) and isNotNull(recent) and earlier > 0,
+                        round((recent - earlier) / earlier * 100, decimals: 1), else: 0.0)
+| fieldsAdd test = test.name, trend = dur
+| fields timeframe, interval, test, avg_duration, change, trend
+// Sorted by change, not by absolute duration. A test that is always the slowest
+// is not news — a long multi-step journey is expected to take longer. A test
+// that got materially slower since the first half of the window is. `limit` runs after this
+// sort, so it is also what decides which tests appear; the chart beside it sorts
+// the same way, or the two show different sets.
+//
+// avg_duration stays as a column, so "which is slowest" is still answerable by
+// clicking the header.
+| sort change desc
+| limit toLong($topN)

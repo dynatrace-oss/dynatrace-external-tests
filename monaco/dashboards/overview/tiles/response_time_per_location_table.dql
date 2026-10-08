@@ -1,0 +1,28 @@
+// Table variant of the response-time-per-location pair. Returns three columns:
+//
+//   avg_response_time  the ranking number, from `scalar: true` rather than
+//                    arrayAvg(dur) — arrayAvg weights every bucket equally, so
+//                    quiet buckets skew both the value and the ordering
+//   change       second half of the selected window against the first, so it
+//                    follows the dashboard timeframe instead of a fixed period.
+//                    Numeric on purpose: colour rules and sorting only work on
+//                    numbers, and a table has no native trend/arrow column type
+//   trend              kept deliberately — with table.enableSparklines it renders
+//                    as a per-row mini chart, showing whether a location is
+//                    steadily degrading or just spiked once
+//
+// `timeframe` and `interval` must stay: the sparkline is a numericArray and
+// needs them, exactly as the line chart beside it does.
+timeseries { dur = avg(external.test.duration), scalar_dur = avg(external.test.duration, scalar: true) },
+  by: { test.run.location },
+  filter: { (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) }
+| fieldsAdd avg_response_time = round(scalar_dur, decimals: 1)
+| fieldsAdd dur = arraySlice(dur, to: arraySize(dur) - 1)
+| fieldsAdd n = toLong(arraySize(dur) / 2)
+| fieldsAdd earlier = arrayAvg(arrayRemoveNulls(arraySlice(dur, to: n))),
+            recent  = arrayAvg(arrayRemoveNulls(arraySlice(dur, from: n)))
+| fieldsAdd change = if(n > 2 and isNotNull(earlier) and isNotNull(recent) and earlier > 0,
+                        round((recent - earlier) / earlier * 100, decimals: 1), else: 0.0)
+| fieldsAdd location = test.run.location, trend = dur
+| fields timeframe, interval, location, avg_response_time, change, trend
+| sort change desc

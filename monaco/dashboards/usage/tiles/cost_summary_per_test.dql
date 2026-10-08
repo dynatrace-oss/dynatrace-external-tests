@@ -1,0 +1,44 @@
+timeseries {runs = sum(external.test.usage.events_ingested)}, by: {test.id, test.name, test.type}, nonempty: true
+| fieldsAdd runs = arraySum(runs)
+| fields test.id, test.name, test.type, runs
+| join [
+    timeseries {dp = count(external.test.availability)}, interval: 1d, by: {test.id, test.run.location, test.type}, nonempty: true
+    | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id}
+    | append [
+        timeseries {dp = count(external.test.duration)}, interval: 1d, by: {test.id, test.run.location}, nonempty: true
+        | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id}
+      ]
+    | append [
+        timeseries {dp = count(external.test.executions)}, interval: 1d, by: {test.id, test.name, test.run.status, test.run.error_code, test.run.location}, nonempty: true
+        | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id}
+      ]
+    | append [
+        timeseries {dp = count(external.test.usage.events_ingested)}, interval: 1d, by: {test.id, test.type, test.run.location}, nonempty: true
+        | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id}
+      ]
+    | append [
+        timeseries {dp = count(external.test.step.duration)}, interval: 1d, by: {test.id, test.step.name, test.step.index}, nonempty: true
+        | summarize data_point_count = toLong(sum(arraySum(dp))), by: {test.id}
+      ]
+    | summarize data_point_count = sum(data_point_count), by: {test.id}
+  ], on: {test.id}, kind: leftOuter, fields: {data_point_count}
+| fieldsAdd _join = 1
+| join [
+    fetch events
+    | filter event.type == "external_test_run"
+    | summarize total_runs = count()
+    | fieldsAdd _join = 1
+    | fields _join, total_runs
+  ], on: {_join}, kind: leftOuter, fields: {total_runs}
+| join [
+    fetch dt.system.events
+    | filter event.kind == "BILLING_USAGE_EVENT"
+      AND event.type == "Events - Retain"
+      AND usage.bucket == $bucketName
+    | summarize total_gb = sum(toLong(billed_bytes)) / 1e9
+    | fieldsAdd _join = 1
+    | fields _join, total_gb
+  ], on: {_join}, kind: leftOuter, fields: {total_gb}
+| fieldsAdd estimated_gb = runs / total_runs * total_gb
+| fieldsRemove total_runs, total_gb, _join
+| sort runs desc

@@ -1,0 +1,59 @@
+configs:
+  - id: external-test-ingest-source
+    type:
+      settings:
+        schema: "builtin:openpipeline.events.ingest-sources"
+        scope: "environment"
+    config:
+      name: "External Test Ingest Source"
+      template: ingest-source.json
+
+  - id: external-test-pipeline-runs
+    type:
+      settings:
+        schema: "builtin:openpipeline.events.pipelines"
+        scope: "environment"
+    config:
+      name: "External Test Runs Pipeline"
+      template: pipeline-runs.json
+      parameters:
+        bucket_name:
+          type: reference
+          configType: bucket
+          configId: events
+          property: id
+
+  - id: external-test-pipeline-steps
+    type:
+      settings:
+        schema: "builtin:openpipeline.events.pipelines"
+        scope: "environment"
+    config:
+      name: "External Test Steps Pipeline"
+      template: pipeline-steps.json
+      parameters:
+        bucket_name:
+          type: reference
+          configType: bucket
+          configId: events
+          property: id
+
+  - id: external-test-routing
+    type:
+      settings:
+        schema: "builtin:openpipeline.events.routing"
+        scope: "environment"
+    config:
+      name: "External Test Event Routing"
+      template: routing.json
+      parameters:
+        pipeline_runs_id:
+          type: reference
+          configType: builtin:openpipeline.events.pipelines
+          configId: external-test-pipeline-runs
+          property: id
+        pipeline_steps_id:
+          type: reference
+          configType: builtin:openpipeline.events.pipelines
+          configId: external-test-pipeline-steps
+          property: id

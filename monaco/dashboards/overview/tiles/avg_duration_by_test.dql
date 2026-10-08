@@ -1,0 +1,20 @@
+// Must select the same tests as the table beside it. `limit` without a `sort`
+// takes an arbitrary subset, so a test visible in the table can be missing from
+// the chart.
+//
+// Sorted by change, matching the table beside it — `limit` runs after the sort,
+// so both tiles must rank the same way or each shows a different subset.
+timeseries avg_duration = avg(external.test.duration),
+  by: { test.id, test.name },
+  filter: { (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) },
+  interval: 1h
+| filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : ")))))
+| fieldsAdd d2 = arraySlice(avg_duration, to: arraySize(avg_duration) - 1)
+| fieldsAdd n = toLong(arraySize(d2) / 2)
+| fieldsAdd e = arrayAvg(arrayRemoveNulls(arraySlice(d2, to: n))),
+            r = arrayAvg(arrayRemoveNulls(arraySlice(d2, from: n)))
+| fieldsAdd change = if(n > 2 and isNotNull(e) and isNotNull(r) and e > 0,
+                        (r - e) / e * 100, else: 0.0)
+| sort change desc
+| limit toLong($topN)
+| fieldsRemove d2, n, e, r, change

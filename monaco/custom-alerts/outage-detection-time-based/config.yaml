@@ -1,0 +1,43 @@
+configs:
+  # ── Global outage: fires when ALL (or majority) of locations fail ────────────
+  # template: global-outage.json — metric averaged across locations (no location in by:{})
+  # threshold: "0.1" → all/almost-all locations down
+  # threshold: "0.5" → majority of locations down
+  - id: outage-time-based-global
+    type:
+      settings:
+        schema: builtin:davis.anomaly-detectors
+        scope: "environment"
+    config:
+      template: global-outage.json
+      parameters:
+        name_suffix: "Global"
+        threshold: "0.1"          # fires when all/almost-all locations fail
+        sliding_window: "5"
+        violating_samples: "3"
+        dealerting_samples: "3"
+        event_type: "ERROR_EVENT"
+        # test_ids: '"checkout-flow","login-smoke"'   # limit to specific tests (optional)
+        locations: "us-east-1, us-west-2, eu-west-1, eu-central-1"
+        # source_entity: "{dims:dt.entity.application}"   # uncomment to anchor Problems to an APPLICATION entity (requires DT_APPLICATION_ID on every run)
+
+  # ── Local outage: fires when a SINGLE location fails ────────────────────────
+  # template: local-outage.json — independent timeseries per (test × location)
+  # threshold: "0.01" → any failure in this location
+  # threshold: "0.5"  → majority of runs from this location fail
+  - id: outage-time-based-local
+    type:
+      settings:
+        schema: builtin:davis.anomaly-detectors
+        scope: "environment"
+    config:
+      template: local-outage.json
+      parameters:
+        name_suffix: "Local"
+        threshold: "0.5"
+        sliding_window: "10"
+        violating_samples: "5"
+        dealerting_samples: "5"
+        event_type: "ERROR_EVENT"
+        # test_ids not set → monitors ALL tests from ALL locations
+        # source_entity: "{dims:dt.entity.application}"   # uncomment to anchor Problems to an APPLICATION entity (requires DT_APPLICATION_ID on every run)

@@ -1,0 +1,40 @@
+delete:
+  # OpenPipeline
+  - project: dynatrace-external-tests
+    type: builtin:openpipeline.events.routing
+    id: external-test-routing
+  - project: dynatrace-external-tests
+    type: builtin:openpipeline.events.pipelines
+    id: external-test-pipeline-runs
+  - project: dynatrace-external-tests
+    type: builtin:openpipeline.events.pipelines
+    id: external-test-pipeline-steps
+  - project: dynatrace-external-tests
+    type: builtin:openpipeline.events.ingest-sources
+    id: external-test-ingest-source
+
+  # Custom Alerts
+  - project: dynatrace-external-tests
+    type: builtin:davis.anomaly-detectors
+    id: error-code-spike-default
+  - project: dynatrace-external-tests
+    type: builtin:davis.anomaly-detectors
+    id: outage-time-based-global
+  - project: dynatrace-external-tests
+    type: builtin:davis.anomaly-detectors
+    id: outage-time-based-local
+  - project: dynatrace-external-tests
+    type: builtin:davis.anomaly-detectors
+    id: performance-anomaly-default
+
+  # Dashboards
+  #
+  # The Grail bucket `external-tests` is deliberately NOT listed here: deleting it
+  # would destroy ingested test data. README.md and docs/get-started.md both state
+  # that data in Grail survives `make delete`.
+  - project: dynatrace-external-tests
+    type: document
+    id: overview
+  - project: dynatrace-external-tests
+    type: document
+    id: usage

@@ -1,0 +1,6 @@
+configs:
+  - id: events
+    type: bucket
+    config:
+      name: events
+      template: events.json

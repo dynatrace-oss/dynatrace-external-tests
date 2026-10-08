@@ -1,0 +1,3 @@
+timeseries events = sum(external.test.executions),
+  interval: 1h,
+  by: { test.name }

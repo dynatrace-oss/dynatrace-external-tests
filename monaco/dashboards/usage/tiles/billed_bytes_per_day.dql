@@ -1,0 +1,5 @@
+fetch dt.system.events
+| filter event.kind == "BILLING_USAGE_EVENT"
+  AND event.type == "Events - Retain"
+  AND usage.bucket == $bucketName
+| makeTimeseries bytes_per_day = sum(toLong(billed_bytes)), interval: 1d

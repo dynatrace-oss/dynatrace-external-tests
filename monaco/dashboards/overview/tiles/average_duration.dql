@@ -1,0 +1,1 @@
+timeseries avg_duration = avg(external.test.duration), filter: { (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location))) and (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) }

@@ -1,0 +1,10 @@
+fetch events
+| filter event.type == "external_test_run"
+| summarize
+    runs = count(),
+    last_run = max(timestamp),
+    by: {test.id, test.name, test.type}
+| fieldsAdd minutes_since_last = toDouble(now() - last_run) / 60000000000
+| fieldsAdd status = if(minutes_since_last < 120, "active", else: "silent")
+| sort last_run desc
+| fields test.id, test.name, test.type, runs, last_run, status

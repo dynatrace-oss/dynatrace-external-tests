@@ -1,0 +1,6 @@
+{
+  "displayName": "External Test Results",
+  "enabled": true,
+  "sourceType": "http",
+  "pathSegment": "external.tests"
+}

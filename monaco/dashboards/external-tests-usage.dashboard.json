@@ -1,0 +1,476 @@
+{
+  "version": 21,
+  "variables": [
+    {
+      "version": 2,
+      "key": "bucketName",
+      "type": "csv",
+      "visible": true,
+      "editable": true,
+      "input": "{{ .bucket_name }}",
+      "multiple": false,
+      "defaultValue": "{{ .bucket_name }}"
+    }
+  ],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "# External tests — usage\nRun-event volume, retention usage, metric data points, and tests that have stopped reporting."
+    },
+    "1": {
+      "title": "Active tests",
+      "type": "data",
+      "query": "{{ .active_tests }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "trend": {
+            "isVisible": false
+          },
+          "sparklineSettings": {
+            "isVisible": false
+          }
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "Run events ingested",
+      "type": "data",
+      "query": "{{ .events_ingested }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "trend": {
+            "isVisible": true
+          },
+          "sparklineSettings": {
+            "isVisible": true
+          }
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "No runs in the last 2 hours",
+      "type": "data",
+      "query": "{{ .silent_tests }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "trend": {
+            "isVisible": false
+          },
+          "sparklineSettings": {
+            "isVisible": false
+          }
+        },
+        "coloring": {
+          "colorRules": [
+            {
+              "value": 0,
+              "comparator": "=",
+              "field": "silent_tests",
+              "colorMode": "custom-color",
+              "customColor": "#2F6863"
+            },
+            {
+              "value": 1,
+              "comparator": "≥",
+              "field": "silent_tests",
+              "colorMode": "custom-color",
+              "customColor": "#C4233B"
+            }
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "type": "markdown",
+      "content": "##### Test-run volume over time\nEach ingested run event contributes to **Events — Ingest & Process** usage. More frequent test execution produces more run events. Step events are not included in this chart."
+    },
+    "5": {
+      "title": "Test runs per hour",
+      "type": "data",
+      "query": "{{ .events_timeseries }}",
+      "visualization": "lineChart",
+      "visualizationSettings": {},
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "6": {
+      "type": "markdown",
+      "content": "##### Event retention usage\nRaw test events are stored in this pack's dedicated Grail bucket and billed as **Events — Retain**. Each hourly billing record reports retained storage, so totals accumulated over time represent retention usage rather than original ingest volume. Billing records arrive hourly; select a timeframe of several hours or longer."
+    },
+    "7": {
+      "title": "Accumulated retention usage (GB-hours)",
+      "type": "data",
+      "query": "{{ .billed_bytes_total }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "trend": {
+            "isVisible": true
+          },
+          "sparklineSettings": {
+            "isVisible": true
+          }
+        },
+        "unitsOverrides": [
+          {
+            "identifier": "total_gb",
+            "unitCategory": "data-size",
+            "baseUnit": "gigabyte",
+            "displayUnit": null,
+            "decimals": 3,
+            "suffix": "",
+            "delimiter": false,
+            "cascade": null
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "8": {
+      "title": "Retention usage by day (GB-hours)",
+      "type": "data",
+      "query": "{{ .billed_bytes_per_day }}",
+      "visualization": "barChart",
+      "visualizationSettings": {},
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "9": {
+      "type": "markdown",
+      "content": "##### Per-test activity\nRun count and last-report time for each test. Tests that run more frequently generate more events and contribute more to ingest and retention usage. Rows with no run in the last two hours are highlighted in red. This fixed threshold does not account for daily or on-demand schedules."
+    },
+    "10": {
+      "title": "Test activity",
+      "type": "data",
+      "query": "{{ .events_per_test }}",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "linewrapEnabled": false
+        },
+        "coloring": {
+          "colorRules": [
+            {
+              "value": "active",
+              "comparator": "=",
+              "field": "status",
+              "colorMode": "custom-color",
+              "customColor": "#2F6863",
+              "type": "string"
+            },
+            {
+              "value": "silent",
+              "comparator": "=",
+              "field": "status",
+              "colorMode": "custom-color",
+              "customColor": "#C4233B",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "type": "markdown",
+      "content": "##### Metric data-point usage\nThe pack defines five `external.test.*` metrics. A passing run produces availability, duration, and run-event counter data points. A failed run with an error code adds a failure data point, and step events can produce step-duration data points. Each active metric and dimension combination forms a time series billed under **Metrics — Ingest & Process**. Dynatrace aggregates data into one-minute buckets, so each active time series contributes at most one billed data point per minute."
+    },
+    "12": {
+      "title": "Metric data points",
+      "type": "data",
+      "query": "{{ .metrics_data_points_total }}",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "trend": {
+            "isVisible": true
+          },
+          "sparklineSettings": {
+            "isVisible": true
+          }
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "13": {
+      "title": "Metric data points per day",
+      "type": "data",
+      "query": "{{ .metrics_data_points_per_day }}",
+      "visualization": "barChart",
+      "visualizationSettings": {},
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "14": {
+      "title": "Metric data points by test",
+      "type": "data",
+      "query": "{{ .metrics_cardinality }}",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "linewrapEnabled": false
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "type": "markdown",
+      "content": "##### Billing drivers by test\n**runs** shows the run-event volume that contributes to event ingest and retention usage. **data_point_count** estimates the metric data points generated by active metric and dimension combinations. **estimated_gb** allocates the bucket's retention usage in proportion to run count and assumes similar event sizes, so treat it as an estimate rather than measured per-test storage."
+    },
+    "18": {
+      "title": "Billing drivers per test",
+      "type": "data",
+      "query": "{{ .cost_summary_per_test }}",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "linewrapEnabled": false
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    }
+  },
+  "layouts": {
+    "0": {
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 1
+    },
+    "1": {
+      "x": 0,
+      "y": 1,
+      "w": 8,
+      "h": 3
+    },
+    "2": {
+      "x": 8,
+      "y": 1,
+      "w": 8,
+      "h": 3
+    },
+    "3": {
+      "x": 16,
+      "y": 1,
+      "w": 8,
+      "h": 3
+    },
+    "4": {
+      "x": 0,
+      "y": 4,
+      "w": 24,
+      "h": 2
+    },
+    "5": {
+      "x": 0,
+      "y": 6,
+      "w": 24,
+      "h": 6
+    },
+    "6": {
+      "x": 0,
+      "y": 12,
+      "w": 24,
+      "h": 2
+    },
+    "7": {
+      "x": 0,
+      "y": 14,
+      "w": 8,
+      "h": 3
+    },
+    "8": {
+      "x": 8,
+      "y": 14,
+      "w": 16,
+      "h": 3
+    },
+    "9": {
+      "x": 0,
+      "y": 17,
+      "w": 24,
+      "h": 2
+    },
+    "10": {
+      "x": 0,
+      "y": 19,
+      "w": 24,
+      "h": 7
+    },
+    "11": {
+      "x": 0,
+      "y": 26,
+      "w": 24,
+      "h": 3
+    },
+    "12": {
+      "x": 0,
+      "y": 29,
+      "w": 8,
+      "h": 3
+    },
+    "13": {
+      "x": 8,
+      "y": 29,
+      "w": 16,
+      "h": 3
+    },
+    "14": {
+      "x": 0,
+      "y": 32,
+      "w": 24,
+      "h": 5
+    },
+    "17": {
+      "x": 0,
+      "y": 37,
+      "w": 24,
+      "h": 2
+    },
+    "18": {
+      "x": 0,
+      "y": 39,
+      "w": 24,
+      "h": 6
+    }
+  },
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-7d",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  },
+  "annotations": []
+}

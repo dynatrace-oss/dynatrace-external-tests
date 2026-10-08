@@ -1,0 +1,35 @@
+// Worst runs first, not newest. This table is the last stop on the dashboard —
+// you arrive here having narrowed things down and want the executions worth
+// opening. Sorting by timestamp alone fills the table with whatever ran most
+// recently, which is mostly passing runs.
+//
+// Failures first (availability 0 before 1), slowest first within each group.
+// The tile's own table.sortBy repeats this, otherwise it silently overrides it.
+//
+// Columns are renamed off their raw field names: the technical prefixes and the
+// _ms suffix add nothing once the cell renders "17.6 s".
+//
+// Uses $tableRows, not $topN — see problem_list.dql.
+fetch events
+| filter event.type == "external_test_run"
+| filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location)))
+| fieldsAdd time = timestamp,
+            test = test.name,
+            type = test.type,
+            status = test.run.status,
+            duration = test.run.duration_ms,
+            location = test.run.location,
+            error = test.run.error_code,
+            message = test.run.error_message,
+            ok = test.run.availability
+// Collapse newlines and cap the length: the Playwright runner emits multi-line
+// messages with a whole "Call log:" block, which would blow up the row height.
+// The full text is still on the event if you open it.
+| fieldsAdd message = replaceString(replaceString(message, "\n", " "), "\r", " ")
+| fieldsAdd message = if(stringLength(message) > 130,
+                         concat(substring(message, to: 130), " …"), else: message)
+// message goes last: it is the widest column by far and would push everything
+// else off-screen if placed earlier.
+| fields time, test, type, status, duration, location, error, message, ok
+| sort ok asc, duration desc
+| limit toLong($tableRows)

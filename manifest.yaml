@@ -1,0 +1,14 @@
+manifestVersion: "1.0"
+projects:
+  - name: dynatrace-external-tests
+    path: monaco
+environmentGroups:
+  - name: default
+    environments:
+      - name: production
+        url:
+          type: environment
+          value: DT_TENANT_URL
+        auth:
+          platformToken:
+            name: PLATFORM_TOKEN

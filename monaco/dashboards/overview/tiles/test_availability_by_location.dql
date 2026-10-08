@@ -1,0 +1,11 @@
+fetch events
+| filter event.type == "external_test_run"
+| filter isNotNull(`test.run.location.lat`)
+| filter (arrayFirst(array($testId)) == "* : All tests" OR in(test.id, iCollectArray(arrayFirst(splitString(array($testId)[], " : "))))) and (arrayFirst(array($location)) == "*" OR in(test.run.location, array($location)))
+| summarize
+    availability_pct = round(avg(test.run.availability) * 100, decimals: 1),
+    avg_duration_ms  = round(avg(test.run.duration_ms), decimals: 0),
+    executions       = count(),
+    latitude         = avg(`test.run.location.lat`),
+    longitude        = avg(`test.run.location.lon`),
+    by: { test.run.location }
