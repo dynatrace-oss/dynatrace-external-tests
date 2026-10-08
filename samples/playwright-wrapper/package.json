@@ -9,6 +9,6 @@
   "dependencies": {
     "playwright": "^1.40.0",
     "axios": "^1.6.0",
-    "uuid": "^9.0.0"
+    "uuid": "^14.0.0"
   }
 }
